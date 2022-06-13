@@ -44,7 +44,7 @@ def powerset(iterable):
     return chain.from_iterable(combinations(s, r) for r in range(1, len(s) + 1))
 
 
-def find_ms(ps, ds, factorize):
+def find_ms(ps, ds, factorize, m_max):
     """Generator returns the p, gen for max m's for p^d"""
     prime_factors = factorize(p ** d - 1 for p in ps for d in ds)
     if prime_factors:
@@ -52,7 +52,9 @@ def find_ms(ps, ds, factorize):
         pd = ((p, d) for p in ps for d in ds)
         for (p, d), ms in zip(pd, all_factors):
             for m_factors in ms:
-                yield p, d, m_factors
+                m = math.prod(m_factors)
+                if m_max is None or m <= m_max:
+                    yield p, d, m, m_factors
 
 
 def str_to_range(s):
@@ -222,10 +224,9 @@ def healg(args):
         print(
             f"{'p' :^{width}} {'d' :^{width}} {'m' :^{width}} {'phim' :^{width}} {'nslots' :^{width}}"
         )
-    for p, d, m_factors in find_ms(args.p, args.d, compute_prime_factors):
-        m = math.prod(m_factors)
-        if args.m_max and m > args.m_max:
-            continue
+    for p, d, m, m_factors in find_ms(
+        args.p, args.d, compute_prime_factors, args.m_max
+    ):
         e, corrected = correct_for_d(p, d, m)
         soln = (p, e, m)
         if soln not in solns:

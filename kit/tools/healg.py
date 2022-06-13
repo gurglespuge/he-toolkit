@@ -12,6 +12,7 @@ from sys import stdout, stderr, exit as sys_exit
 from itertools import chain, combinations
 from collections import Counter
 from pathlib import Path
+from typing import List, Iterable
 
 
 def set_gen_primes_subparser(subparsers):
@@ -46,7 +47,7 @@ def powerset(iterable):
 
 def find_ms(ps, ds, factorize, m_max):
     """Generator returns the p, gen for max m's for p^d"""
-    prime_factors = factorize(p ** d - 1 for p in ps for d in ds)
+    prime_factors = factorize((p ** d - 1 for p in ps for d in ds), m_max)
     if prime_factors:
         all_factors = tuple(powerset(primes) for primes in prime_factors)
         pd = ((p, d) for p in ps for d in ds)
@@ -100,8 +101,9 @@ def parse_range_for_primes(string):
     try:
         primes_list = PrimesFromFile(default_primes_filepath)
     except FileNotFoundError:
-        with default_primes_filepath.open("w", encoding="utf-8") as f:
+        with default_primes_filepath.open("a", encoding="utf-8") as f:
             gen_primes(2, 140_000, outfile=f)
+            gen_primes(140_001, 180_000, outfile=f)
         primes_list = PrimesFromFile(default_primes_filepath)
 
     return parse_range(string, filter_fn=primes_list.is_prime)
@@ -161,6 +163,38 @@ def compute_prime_factors(numbers, factor_util="factor"):
     return (parse_factor_line(line)[1] for line in factor_lines)
 
 
+def compute_prime_factors_by_part_lookup(numbers: Iterable[int], m_max) -> List[int]:
+
+    # Code duplication
+    default_primes_filepath = Path("~/.hekit/primes.txt").expanduser()
+    try:
+        primes = PrimesFromFile(default_primes_filepath)
+    except FileNotFoundError:
+        #        with default_primes_filepath.open("a", encoding="utf-8") as f:
+        #            gen_primes(2, 140_000, outfile=f)
+        #            gen_primes(140_001, 150_000, outfile=f)
+        primes = PrimesFromFile(default_primes_filepath)
+
+    numbers = list(numbers)
+    for rem in numbers:
+        p_factors = []
+        for p in primes.primes:
+            if m_max is not None and p > m_max:
+                skip_normal = True
+                continue
+            while rem != 1 and rem % p == 0:
+                p_factors.append(p)
+                rem //= p
+
+        if skip_normal is True:
+            yield tuple(p_factors)
+        else:
+            # FIXME compute_prime_factors will thrash IO like this
+            # pass leftovers to normal factorize program
+            rem_factors = next(compute_prime_factors([rem]))
+            yield tuple(p_factors) + rem_factors
+
+
 def set_gen_algebras_subparser(subparsers):
     """Register subparser to generate algebras"""
     parser = subparsers.add_parser(
@@ -174,6 +208,11 @@ def set_gen_algebras_subparser(subparsers):
         "-d", type=parse_range, default="1", help="number of coefficients in a slot"
     )
     parser.add_argument("--m-max", type=int, help="max m")
+    parser.add_argument(
+        "--part-lookup",
+        action="store_true",
+        help="when factoring initially use a lookup table",
+    )
     parser.add_argument(
         "--no-corrected", action="store_false", help="include corrected d orders"
     )
@@ -224,9 +263,12 @@ def healg(args):
         print(
             f"{'p' :^{width}} {'d' :^{width}} {'m' :^{width}} {'phim' :^{width}} {'nslots' :^{width}}"
         )
-    for p, d, m, m_factors in find_ms(
-        args.p, args.d, compute_prime_factors, args.m_max
-    ):
+    factorize_function = (
+        compute_prime_factors_by_part_lookup
+        if args.part_lookup
+        else compute_prime_factors
+    )
+    for p, d, m, m_factors in find_ms(args.p, args.d, factorize_function, args.m_max):
         e, corrected = correct_for_d(p, d, m)
         soln = (p, e, m)
         if soln not in solns:

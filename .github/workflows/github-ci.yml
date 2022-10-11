@@ -105,8 +105,8 @@
         include: # use clang++ and gcc+ with clang only
           - c_compiler: clang-10
             cxx_compiler: clang++-10
-        #   - c_compiler: gcc-10
-        #     cxx_compiler: g++-10
+          - c_compiler: gcc-10
+            cxx_compiler: g++-10
 
     steps:
       - uses: actions/checkout@v3

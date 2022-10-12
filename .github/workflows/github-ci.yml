@@ -197,6 +197,11 @@ jobs:
           echo "CC=${{matrix.c_compiler}}" >> $GITHUB_ENV
           echo "CXX=${{matrix.cxx_compiler}}" >> $GITHUB_ENV
 
+          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
+          sudo apt update
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+          sudo apt install ${{ matrix.c_compiler }}
+
       - name: ubuntu 20
         if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-12'
         run: |

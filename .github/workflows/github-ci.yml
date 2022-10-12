@@ -188,8 +188,7 @@ jobs:
         if: matrix.os == 'ubuntu-22.04' &&  matrix.c_compiler == 'clang-12'
         run: |
           sudo apt install libomp-dev
-          sudo cp /opt/local/include/libomp/omp.h /opt/local/include
-          sudo cp /opt/local/lib/libomp/* /opt/local/lib
+          update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-12
 
       - name: Build and install SEAL, examples, and sample kernels recipe
         run: |

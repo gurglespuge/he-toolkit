@@ -187,8 +187,8 @@ jobs:
       - name: he-toolkit-seal-ubuntu-22
         if: matrix.os == 'ubuntu-22.04' &&  matrix.c_compiler == 'clang-12'
         run: |
-          sudo apt install libomp-dev
-          update-alternatives --install /usr/bin/gcc gcc /usr/bin/clang-12
+          sudo apt install libomp5-14
+          update-alternatives --install /usr/bin/clang-11 clang /usr/bin/clang-12
 
       - name: Build and install SEAL, examples, and sample kernels recipe
         run: |

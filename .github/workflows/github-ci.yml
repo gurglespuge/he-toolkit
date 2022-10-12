@@ -158,14 +158,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        c_compiler: [clang-13, clang-14]
+        c_compiler: [clang-10, clang-11]
         # os: [ubuntu-20.04]
         include:
           # pairing cc compiler with relavent cxx compiler
-          - c_compiler: clang-13
-            cxx_compiler: clang++-13
-          - c_compiler: clang-14
-            cxx_compiler: clang++-14
+          - c_compiler: clang-10
+            cxx_compiler: clang++-10
+          - c_compiler: clang-11
+            cxx_compiler: clang++-11
         # exclude:
         #   - os: ubuntu-22.0.4
         #     c_compiler: clang-11
@@ -197,79 +197,101 @@ jobs:
           echo "CC=${{matrix.c_compiler}}" >> $GITHUB_ENV
           echo "CXX=${{matrix.cxx_compiler}}" >> $GITHUB_ENV
 
-          
-          # download key file
-          wget https://apt.llvm.org/llvm-snapshot.gpg.key
-          # add the key
-          sudo apt-key add llvm-snapshot.gpg.key
-          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
-          sudo apt update
-          sudo apt install ${{ matrix.c_compiler }}
+      - name: Test OpenMP
+        run: |
+          cat > helloworld.cpp << EOL
+          #include <iostream>
+          int main()
+          {
+              #pragma omp parallel
+              {
+                  std::cout << "Hello World" << std::endl;
+              }
+              return 0;
+          }
+          EOL
 
-      - name: ubuntu 20
-        if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-12'
-        run: |
-          sudo apt install ${{ matrix.c_compiler }}
+          cat > CMakeLists.txt << EOL
+          cmake_minimum_required(VERSION 2.8.9)
+          project (hello)
+          add_executable(hello helloworld.cpp)
+          find_package(OpenMP)
+          if(OpenMP_CXX_FOUND)
+              target_link_libraries(hello PUBLIC OpenMP::OpenMP_CXX)
+          endif()
+          EOL
+
+          mkdir build
+          pushd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=cg++-10 -DCMAKE_C_COMPILER=clang-10 ..
+          make -j
+          ./hello
+
+
+      # - name: ubuntu 20
+      #   if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-12'
+      #   run: |
+      #     sudo apt install ${{ matrix.c_compiler }}
       
-      - name: ubuntu 20
-        if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-13'
-        run: |
-          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
-          sudo apt update
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
-          sudo apt install ${{ matrix.c_compiler }}
+      # - name: ubuntu 20
+      #   if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-13'
+      #   run: |
+      #     sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
+      #     sudo apt update
+      #     wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+      #     sudo apt install ${{ matrix.c_compiler }}
         
-      - name: ubuntu 20
-        if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-14'
-        run: |
-          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
-          sudo apt update
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
-          sudo apt install ${{ matrix.c_compiler }}
+      # - name: ubuntu 20
+      #   if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-14'
+      #   run: |
+      #     sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
+      #     sudo apt update
+      #     wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+      #     sudo apt install ${{ matrix.c_compiler }}
       
-      - name: Ubuntu 22 clang-11
-        if: matrix.os == 'ubuntu-22.04' && matrix.c_compiler == 'clang-11'
-        run: |
-          sudo apt install libomp-dev
-          sudo apt install clang-11
+      # - name: Ubuntu 22 clang-11
+      #   if: matrix.os == 'ubuntu-22.04' && matrix.c_compiler == 'clang-11'
+      #   run: |
+      #     sudo apt install libomp-dev
+      #     sudo apt install clang-11
       
-      - name: he-toolkit-seal-ubuntu-22
-        if: matrix.os == 'ubuntu-22.04' && matrix.c_compiler == 'clang-14'
-        run: |
-          sudo apt install libomp-dev
+      # - name: he-toolkit-seal-ubuntu-22
+      #   if: matrix.os == 'ubuntu-22.04' && matrix.c_compiler == 'clang-14'
+      #   run: |
+      #     sudo apt install libomp-dev
 
-      - name: Build and install SEAL, examples, and sample kernels recipe
-        run: |
-          ./hekit --config default.config install .github/hekit-recipes/seal.toml --recipe_arg "toolkit-path=${GITHUB_WORKSPACE}"
-          ./hekit --config default.config list
-          echo "QUERY_BUILD_DIR=$HOME/.hekit/components/examples/secure-query/build" >> $GITHUB_ENV
-          echo "LR_BUILD_DIR=$HOME/.hekit/components/examples/logistic-regression/build" >> $GITHUB_ENV
-          echo "SEAL_KERNELS_BUILD_DIR=$HOME/.hekit/components/sample-kernels/seal/build" >> $GITHUB_ENV
+      # - name: Build and install SEAL, examples, and sample kernels recipe
+      #   run: |
+      #     ./hekit --config default.config install .github/hekit-recipes/seal.toml --recipe_arg "toolkit-path=${GITHUB_WORKSPACE}"
+      #     ./hekit --config default.config list
+      #     echo "QUERY_BUILD_DIR=$HOME/.hekit/components/examples/secure-query/build" >> $GITHUB_ENV
+      #     echo "LR_BUILD_DIR=$HOME/.hekit/components/examples/logistic-regression/build" >> $GITHUB_ENV
+      #     echo "SEAL_KERNELS_BUILD_DIR=$HOME/.hekit/components/sample-kernels/seal/build" >> $GITHUB_ENV
 
-      - name: Run Secure Query example
-        run: |
-          cd ${QUERY_BUILD_DIR}
-          echo -n "Input: Louisiana, " && ./secure-query <<< $'\n\nLouisiana\n' | grep "Baton Rouge"
-          echo -n "Input: North Dakota, " && ./secure-query <<< $'\n\nNorth Dakota\n' | grep "Bismarck"
-          echo -n "Input: Wyoming, " && ./secure-query <<< $'\n\nWyoming\n' | grep "Cheyenne"
+      # - name: Run Secure Query example
+      #   run: |
+      #     cd ${QUERY_BUILD_DIR}
+      #     echo -n "Input: Louisiana, " && ./secure-query <<< $'\n\nLouisiana\n' | grep "Baton Rouge"
+      #     echo -n "Input: North Dakota, " && ./secure-query <<< $'\n\nNorth Dakota\n' | grep "Bismarck"
+      #     echo -n "Input: Wyoming, " && ./secure-query <<< $'\n\nWyoming\n' | grep "Cheyenne"
 
-      - name: Run LR example
-        run: |
-          cd ${LR_BUILD_DIR}
-          ./lr_test --compare --data lrtest_large | grep "All match!"
+      # - name: Run LR example
+      #   run: |
+      #     cd ${LR_BUILD_DIR}
+      #     ./lr_test --compare --data lrtest_large | grep "All match!"
 
-      - name: Run unit tests
-        run: ${SEAL_KERNELS_BUILD_DIR}/test/unit-test
+      # - name: Run unit tests
+      #   run: ${SEAL_KERNELS_BUILD_DIR}/test/unit-test
 
-      # SEAL sample kernels
-      - name: Run SEAL sample kernels
-        run: KMP_WARNINGS=0 OMP_NUM_THREADS=5 ${SEAL_KERNELS_BUILD_DIR}/sample-kernels-seal --benchmark_out_format=json --benchmark_out="${GITHUB_JOB}_sample-kernels-seal_${GITHUB_SHA}.json"
-      - name: Archive SEAL sample kernel results
-        uses: actions/upload-artifact@v2
-        with:
-          name: ${{github.job}}_sample-kernels-seal_${{github.sha}}.json
-          path: ${{github.job}}_sample-kernels-seal_${{github.sha}}.json
-          retention-days: 90 # Maximum for free version
+      # # SEAL sample kernels
+      # - name: Run SEAL sample kernels
+      #   run: KMP_WARNINGS=0 OMP_NUM_THREADS=5 ${SEAL_KERNELS_BUILD_DIR}/sample-kernels-seal --benchmark_out_format=json --benchmark_out="${GITHUB_JOB}_sample-kernels-seal_${GITHUB_SHA}.json"
+      # - name: Archive SEAL sample kernel results
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: ${{github.job}}_sample-kernels-seal_${{github.sha}}.json
+      #     path: ${{github.job}}_sample-kernels-seal_${{github.sha}}.json
+      #     retention-days: 90 # Maximum for free version
 
 
 # ##############

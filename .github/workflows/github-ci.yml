@@ -223,7 +223,7 @@ jobs:
 
           mkdir build
           pushd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=cg++-10 -DCMAKE_C_COMPILER=clang-10 ..
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} ..
           make -j
           ./hello
 

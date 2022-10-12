@@ -197,11 +197,12 @@ jobs:
           echo "CC=${{matrix.c_compiler}}" >> $GITHUB_ENV
           echo "CXX=${{matrix.cxx_compiler}}" >> $GITHUB_ENV
 
-          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
+          
           # download key file
           wget https://apt.llvm.org/llvm-snapshot.gpg.key
           # add the key
           sudo apt-key add llvm-snapshot.gpg.key
+          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
           sudo apt update
           sudo apt install ${{ matrix.c_compiler }}
 

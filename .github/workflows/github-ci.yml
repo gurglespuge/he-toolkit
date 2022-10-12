@@ -180,7 +180,6 @@
         if: matrix.os == 'ubuntu-22.04' &&  matrix.c_compiler == 'clang-11.1.0'
         run: |
           sudo apt install libomp-dev
-          echo CXX="$HOME/.local/clang_11.1.0/bin >> $GITHUB_PATH
 
       - name: Build and install SEAL, examples, and sample kernels recipe
         run: |

@@ -120,7 +120,7 @@ jobs:
         exclude: # Skip clang-10 on ubuntu-22.04
           - c_compiler: clang-10
             os: ubuntu-22.04
-          - c_compiler: clang-14
+          - c_compiler: clang-11.1.0
             os: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3

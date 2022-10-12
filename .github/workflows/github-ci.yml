@@ -151,6 +151,7 @@ jobs:
 
   build-and-test-toolkit-seal:
     name: HE Toolkit SEAL 'os=${{matrix.os}} compiler=${{matrix.cxx_compiler}}'
+    fail-fast: false
     runs-on: ${{matrix.os}}
     defaults:
       run:
@@ -169,6 +170,9 @@ jobs:
             cxx_compiler: clang++-13
           - c_compiler: clang-14
             cxx_compiler: clang++-14
+        # exclude:
+        #   - os: ubuntu-22.0.4
+        #     c_compiler: clang-11
       # matrix:
       #   c_compiler: [clang-10, gcc-10, clang-14]
       #   os: [ubuntu-20.04, ubuntu-22.04]
@@ -205,6 +209,7 @@ jobs:
       - name: Ubuntu 22 clang-11
         if: matrix.os == 'ubuntu-22.04' && matrix.c_compiler == 'clang-11'
         run: |
+          sudo apt install libomp-dev
           sudo apt install clang-11
       
       - name: he-toolkit-seal-ubuntu-22

@@ -128,6 +128,7 @@ jobs:
         run: |
           pip3 install toml
           echo "$HOME/.local/bin" >> $GITHUB_PATH
+          export PATH=$HOME/.local/clang_11.1.0/bin >> $GITHUB_PATH
           echo "CC=${{matrix.cc_compiler}}" >> $GITHUB_ENV
           echo "CXX=${{matrix.cxx_compiler}}" >> $GITHUB_ENV
 
@@ -152,19 +153,19 @@ jobs:
   #       shell: bash
   #   strategy:
   #     matrix:
-  #       c_compiler: [clang-10, gcc-10, clang-14]
+  #       c_compiler: [clang-10, gcc-10, clang-11.1.0]
   #       os: [ubuntu-20.04, ubuntu-22.04]
   #       include: # using clang-10, gcc-10 and clang-14 versions
   #         - c_compiler: clang-10
   #           cxx_compiler: clang++-10
   #         - c_compiler: gcc-10
   #           cxx_compiler: g++-10
-  #         - c_compiler: clang-14
-  #           cxx_compiler: clang++-14
+  #         - c_compiler: clang-11.1.0
+  #           cxx_compiler: clang++-11.1.0
   #       exclude: # Skip clang-10 on ubuntu-22.04
   #         - c_compiler: clang-10
   #           os: ubuntu-22.04
-  #         - c_compiler: clang-14
+  #         - c_compiler: clang-11.1.0
   #           os: ubuntu-20.04
 
   #   steps:
@@ -177,7 +178,7 @@ jobs:
   #         echo "CXX=${{matrix.cxx_compiler}}" >> $GITHUB_ENV
 
   #     - name: he-toolkit-seal-ubuntu-22
-  #       if: matrix.os == 'ubuntu-22.04' &&  matrix.c_compiler == 'clang-14'
+  #       if: matrix.os == 'ubuntu-22.04' &&  matrix.c_compiler == 'clang-11.1.0'
   #       run: |
   #         sudo apt install libomp-dev
 

@@ -128,7 +128,7 @@ jobs:
         run: |
           pip3 install toml
           echo "$HOME/.local/bin" >> $GITHUB_PATH
-          export PATH=$HOME/.local/clang_11.1.0/bin >> $GITHUB_PATH
+          echo "$HOME/.local/clang_11.1.0/bin >> $GITHUB_PATH
           echo "CC=${{matrix.cc_compiler}}" >> $GITHUB_ENV
           echo "CXX=${{matrix.cxx_compiler}}" >> $GITHUB_ENV
 

@@ -151,21 +151,35 @@ jobs:
 
   build-and-test-toolkit-seal:
     name: HE Toolkit SEAL 'os=${{matrix.os}} compiler=${{matrix.cxx_compiler}}'
-    runs-on: ubuntu-20.04
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         shell: bash
     strategy:
       fail-fast: false
       matrix:
-        c_compiler: [clang-10, clang-11]
-        # os: [ubuntu-20.04]
+        c_compiler: [clang-10, clang-11, clang-12, clang-13, clang-14]
+        os: [ubuntu-20.04, ubuntu-22.04]
         include:
           # pairing cc compiler with relavent cxx compiler
           - c_compiler: clang-10
             cxx_compiler: clang++-10
           - c_compiler: clang-11
             cxx_compiler: clang++-11
+          - c_compiler: clang-12
+            cxx_compiler: clang++-12
+          - c_compiler: clang-13
+            cxx_compiler: clang++-13
+          - c_compiler: clang-14
+            cxx_compiler: clang++-14
+        exclude:
+          - os: ubuntu-20.0.4
+            c_compiler: clang-13
+          - os: ubuntu-20.0.4
+            c_compiler: clang-14
+          - os: ubuntu-22.0.4
+            c_compiler: clang-10
+          
         # exclude:
         #   - os: ubuntu-22.0.4
         #     c_compiler: clang-11
@@ -196,7 +210,18 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           echo "CC=${{matrix.c_compiler}}" >> $GITHUB_ENV
           echo "CXX=${{matrix.cxx_compiler}}" >> $GITHUB_ENV
+      
+      - name: Install Clang-12 on Ubuntu-20
+        if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-12'
+        run: |
+          sudo apt install clang-12
 
+      - name: Install Clang-11 on Ubuntu-22
+        if: matrix.os == 'ubuntu-22.04' && matrix.c_compiler == 'clang-11'
+        run: |
+          sudo apt install libomp-dev
+          sudo apt install clang-11
+          
       - name: Test OpenMP
         run: |
           cat > helloworld.cpp << EOL
@@ -226,12 +251,6 @@ jobs:
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} ..
           make -j
           ./hello
-
-
-      # - name: ubuntu 20
-      #   if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-12'
-      #   run: |
-      #     sudo apt install ${{ matrix.c_compiler }}
       
       # - name: ubuntu 20
       #   if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-13'

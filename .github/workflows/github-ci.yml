@@ -33,20 +33,20 @@ jobs:
   #       with:
   #         extra_args: --all-files
 
-  test-hekit:
-    name: Test hekit commands
-    runs-on: ubuntu-20.04
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup
-        run: |
-          pip3 install docker pytest pytest-mock pytest-xdist toml
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-      - name: Run pytests
-        run: pytest tests/ -n 8 --dist loadgroup
+  # test-hekit:
+  #   name: Test hekit commands
+  #   runs-on: ubuntu-20.04
+  #   defaults:
+  #     run:
+  #       shell: bash
+  #   steps:
+  #     - uses: actions/checkout@v3
+  #     - name: Setup
+  #       run: |
+  #         pip3 install docker pytest pytest-mock pytest-xdist toml
+  #         echo "$HOME/.local/bin" >> $GITHUB_PATH
+  #     - name: Run pytests
+  #       run: pytest tests/ -n 8 --dist loadgroup
 
   # build-and-test-toolkit-palisade:
   #   name: HE Toolkit PALISADE 'os=${{matrix.os}} compiler=${{matrix.cxx_compiler}}'

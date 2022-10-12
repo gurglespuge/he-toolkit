@@ -151,7 +151,7 @@ jobs:
 
   build-and-test-toolkit-seal:
     name: HE Toolkit SEAL 'os=${{matrix.os}} compiler=${{matrix.cxx_compiler}}'
-    runs-on: ${{matrix.os}}
+    runs-on: ubuntu-20.04
     defaults:
       run:
         shell: bash
@@ -159,13 +159,9 @@ jobs:
       fail-fast: false
       matrix:
         c_compiler: [clang-13, clang-14]
-        os: [ubuntu-20.04]
+        # os: [ubuntu-20.04]
         include:
           # pairing cc compiler with relavent cxx compiler
-          - c_compiler: clang-11
-            cxx_compiler: clang++-11
-          - c_compiler: clang-12
-            cxx_compiler: clang++-12
           - c_compiler: clang-13
             cxx_compiler: clang++-13
           - c_compiler: clang-14

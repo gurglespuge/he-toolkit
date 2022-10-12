@@ -31,26 +31,14 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}
 file(GLOB CODE_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_executable(lr_test ${CODE_SRCS})
 
-if(NOT TARGET OpenMP::OpenMP_CXX)
-    find_package(Threads REQUIRED)
-    add_library(OpenMP::OpenMP_CXX IMPORTED INTERFACE)
-    set_property(TARGET OpenMP::OpenMP_CXX
-                 PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_CXX_FLAGS})
-    set_property(TARGET OpenMP::OpenMP_CXX
-                 PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_CXX_FLAGS} Threads::Threads)
+message(STATUS "set compipler")
+set(CMAKE_C_COMPILER "/usr/local/Cellar/llvm/5.0.1/bin/clang")
+set(CMAKE_CXX_COMPILER "/usr/local/Cellar/llvm/5.0.1/bin/clang++")
+set(OPENMP_LIBRARIES "/usr/local/Cellar/llvm/5.0.1/lib")
+set(OPENMP_INCLUDES "/usr/local/Cellar/llvm/5.0.1/include")
 
-endif()
-target_link_libraries(lr_test PUBLIC OpenMP::OpenMP_CXX)
-
-
-if(NOT TARGET OpenMP::OpenMP_C)
-    find_package(Threads REQUIRED)
-    add_library(OpenMP::OpenMP_C IMPORTED INTERFACE)
-    set_property(TARGET OpenMP::OpenMP_C
-                 PROPERTY INTERFACE_COMPILE_OPTIONS ${OpenMP_C_FLAGS})
-    set_property(TARGET OpenMP::OpenMP_C
-                 PROPERTY INTERFACE_LINK_LIBRARIES ${OpenMP_C_FLAGS} Threads::Threads)
-endif()
+set(OPENMP_LIBRARIES "/usr/local/opt/llvm/lib")
+link_directories(${OPENMP_LIBRARIES})
 
 target_link_libraries(lr_test PRIVATE OpenMP::OpenMP_CXX)
 target_include_directories(lr_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

@@ -151,12 +151,12 @@ jobs:
 
   build-and-test-toolkit-seal:
     name: HE Toolkit SEAL 'os=${{matrix.os}} compiler=${{matrix.cxx_compiler}}'
-    fail-fast: false
     runs-on: ${{matrix.os}}
     defaults:
       run:
         shell: bash
     strategy:
+      fail-fast: false
       matrix:
         c_compiler: [clang-11, clang-12, clang-13, clang-14]
         os: [ubuntu-20.04, ubuntu-22.04]

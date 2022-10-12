@@ -158,8 +158,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        c_compiler: [clang-11, clang-12, clang-13, clang-14]
-        os: [ubuntu-20.04, ubuntu-22.04]
+        c_compiler: [clang-13, clang-14]
+        os: [ubuntu-20.04]
         include:
           # pairing cc compiler with relavent cxx compiler
           - c_compiler: clang-11
@@ -202,8 +202,24 @@ jobs:
           echo "CXX=${{matrix.cxx_compiler}}" >> $GITHUB_ENV
 
       - name: ubuntu 20
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-12'
         run: |
+          sudo apt install ${{ matrix.c_compiler }}
+      
+      - name: ubuntu 20
+        if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-13'
+        run: |
+          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
+          sudo apt update
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
+          sudo apt install ${{ matrix.c_compiler }}
+        
+      - name: ubuntu 20
+        if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-14'
+        run: |
+          sudo add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main'
+          sudo apt update
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
           sudo apt install ${{ matrix.c_compiler }}
       
       - name: Ubuntu 22 clang-11

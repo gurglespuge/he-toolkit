@@ -249,7 +249,7 @@ jobs:
 
               target_sources(sealtest
                   PRIVATE
-                      ${CMAKE_CURRENT_LIST_DIR}/4_bgv_basics.cpp
+                      4_bgv_basics.cpp
               )
 
               if(TARGET SEAL::seal)

@@ -214,7 +214,7 @@ jobs:
           sudo cmake --install build
 
       - name: Build SEAL Examples
-        working-director: seal/native/examples
+        working-directory: seal/native/examples
         run: |
           ##################################
           #### Append  main() to script ####

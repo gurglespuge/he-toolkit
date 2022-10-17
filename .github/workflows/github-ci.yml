@@ -150,7 +150,7 @@ jobs:
   #         ${PSI_BUILD_DIR}/psi client.set --server ${PSI_BUILD_DIR}/datasets/us_states.set | grep -B 1 "California"
 
   build-and-test-toolkit-seal:
-    name: HE Toolkit SEAL 'os=${{matrix.os}} compiler=${{matrix.cxx_compiler}}'
+    name: HE Toolkit SEAL os=${{ matrix.os }} compiler=${{matrix.c_compiler}}
     runs-on: ${{ matrix.os }}
     defaults:
       run:
@@ -221,36 +221,86 @@ jobs:
         run: |
           sudo apt install libomp-dev
           sudo apt install clang-11
-          
-      - name: Test OpenMP
-        run: |
-          cat > helloworld.cpp << EOL
-          #include <iostream>
-          int main()
-          {
-              #pragma omp parallel
-              {
-                  std::cout << "Hello World" << std::endl;
-              }
-              return 0;
-          }
-          EOL
 
+      - name: Pull Microsoft SEAL
+        uses: actions/checkout@v3
+        with:
+          repository: microsoft/SEAL
+          path: seal
+
+      - name: Build SEAL
+        working-directory: seal
+        run: |
+          cmake -S . -B build
+          cmake --build build
+          sudo cmake --install build
+
+      - name: Test SEAL
+        run: |
           cat > CMakeLists.txt << EOL
           cmake_minimum_required(VERSION 2.8.9)
           project (hello)
-          add_executable(hello helloworld.cpp)
+          
+          set(${PROJECT_NAME}_HEADER
+              "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.h)
+          set(${PROJECT_NAME}_SOURCES
+              "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.cpp)
+
           find_package(OpenMP)
           if(OpenMP_CXX_FOUND)
               target_link_libraries(hello PUBLIC OpenMP::OpenMP_CXX)
           endif()
-          EOL
+
+          ## SEAL
+          set(_COMPONENT_NAME "SEAL")
+          set(_COMPONENT_HEADER "seal/seal.h")
+          set(_COMPONENT_LIB_NAME "seal-3.6")
+          set(_HEADER_ONLY FALSE)
+          include(cmake/utils/import-library.cmake)
+
+          configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/engine/seal_version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/engine/seal_version.h.in1")
+          configure_file("${CMAKE_CURRENT_BINARY_DIR}/include/engine/seal_version.h.in1" "${CMAKE_CURRENT_SOURCE_DIR}/include/engine/seal_version.h")
+
+          target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
+
+          EOL  
 
           mkdir build
           pushd build
           cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} ..
           make -j
           ./hello
+
+
+      # - name: Test OpenMP
+      #   run: |
+      #     cat > helloworld.cpp << EOL
+      #     #include <iostream>
+      #     int main()
+      #     {
+      #         #pragma omp parallel
+      #         {
+      #             std::cout << "Hello World" << std::endl;
+      #         }
+      #         return 0;
+      #     }
+      #     EOL
+
+      #     cat > CMakeLists.txt << EOL
+      #     cmake_minimum_required(VERSION 2.8.9)
+      #     project (hello)
+      #     add_executable(hello helloworld.cpp)
+      #     find_package(OpenMP)
+      #     if(OpenMP_CXX_FOUND)
+      #         target_link_libraries(hello PUBLIC OpenMP::OpenMP_CXX)
+      #     endif()
+      #     EOL
+
+      #     mkdir build
+      #     pushd build
+      #     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} ..
+      #     make -j
+      #     ./hello
       
       # - name: ubuntu 20
       #   if: matrix.os == 'ubuntu-20.04' && matrix.c_compiler == 'clang-13'

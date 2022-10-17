@@ -240,27 +240,24 @@ jobs:
           cat > CMakeLists.txt << EOL
           cmake_minimum_required(VERSION 2.8.9)
           project (hello)
-          ###################
+          ###################################################################
           set(${PROJECT_NAME}_HEADER
-              "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.h)
+              "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.h")
           set(${PROJECT_NAME}_SOURCES
-              "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.cpp)
+              "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.cpp")
+          ###################################################################
           find_package(OpenMP)
           if(OpenMP_CXX_FOUND)
               target_link_libraries(hello PUBLIC OpenMP::OpenMP_CXX)
           endif()
-          ###################
+          ###################################################################
           ## SEAL
-          ###################
           set(_COMPONENT_NAME "SEAL")
           set(_COMPONENT_HEADER "seal/seal.h")
           set(_COMPONENT_LIB_NAME "seal-3.6")
           set(_HEADER_ONLY FALSE)
           include(cmake/utils/import-library.cmake)
-          ###################
-          configure_file("${CMAKE_CURRENT_SOURCE_DIR}/include/engine/seal_version.h.in" "${CMAKE_CURRENT_BINARY_DIR}/include/engine/seal_version.h.in1")
-          configure_file("${CMAKE_CURRENT_BINARY_DIR}/include/engine/seal_version.h.in1" "${CMAKE_CURRENT_SOURCE_DIR}/include/engine/seal_version.h")
-          ###################
+          ###################################################################
           target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
           EOL  
 

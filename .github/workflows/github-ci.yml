@@ -173,34 +173,12 @@ jobs:
           - c_compiler: clang-14
             cxx_compiler: clang++-14
         exclude:
-          - os: ubuntu-20.0.4
-            c_compiler: clang-13
-          - os: ubuntu-20.0.4
-            c_compiler: clang-14
-          - os: ubuntu-22.0.4
-            c_compiler: clang-10
-          
-        # exclude:
-        #   - os: ubuntu-22.0.4
-        #     c_compiler: clang-11
-      # matrix:
-      #   c_compiler: [clang-10, gcc-10, clang-14]
-      #   os: [ubuntu-20.04, ubuntu-22.04]
-      #   include:
-      #     # pairing cc compiler with relavent cxx compiler
-      #     - c_compiler: clang-10
-      #       cxx_compiler: clang++-10
-      #     - c_compiler: gcc-10
-      #       cxx_compiler: g++-10
-      #     - c_compiler: clang-14
-      #       cxx_compiler: clang++-14
-      #   exclude:
-      #     # Clang-10 not pre-installed on Ubuntu-22
-      #     - c_compiler: clang-10
-      #       os: ubuntu-22.04
-      #     # Clang-14 not pre-installed on Ubuntu-20
-      #     - c_compiler: clang-14
-      #       os: ubuntu-20.04
+          - c_compiler: clang-13
+            os: ubuntu-20.0.4            
+          - c_compiler: clang-14
+            os: ubuntu-20.0.4            
+          - c_compiler: clang-10
+            os: ubuntu-22.0.4            
 
     steps:
       - uses: actions/checkout@v3
@@ -231,41 +209,99 @@ jobs:
       - name: Build SEAL
         working-directory: seal
         run: |
-          cmake -S . -B build
+          cmake -S . -B build -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           cmake --build build
           sudo cmake --install build
 
-      - name: Test SEAL
+      - name: Build SEAL Examples
+        working-director: seal/native/examples
         run: |
-          cat > CMakeLists.txt << EOL
-          cmake_minimum_required(VERSION 2.8.9)
-          project (hello)
-          ###################################################################
-          set(${PROJECT_NAME}_HEADER
-              "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.h")
-          set(${PROJECT_NAME}_SOURCES
-              "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.cpp")
-          ###################################################################
-          find_package(OpenMP)
-          if(OpenMP_CXX_FOUND)
-              target_link_libraries(hello PUBLIC OpenMP::OpenMP_CXX)
-          endif()
-          ###################################################################
-          ## SEAL
-          set(_COMPONENT_NAME "SEAL")
-          set(_COMPONENT_HEADER "seal/seal.h")
-          set(_COMPONENT_LIB_NAME "seal-3.6")
-          set(_HEADER_ONLY FALSE)
-          include(cmake/utils/import-library.cmake)
-          ###################################################################
-          target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
-          EOL  
+          ##################################
+          #### Append  main() to script ####
+          ##################################
+          cat >> 4_bgv_basics.cpp << EOL
+          int main() {
+            example_bgv_basics();
+            return 0;
+          }
+          EOL
 
-          mkdir build
+          ##################################
+          #### Overwrite CMakeLists.txt ####
+          ##################################
+          cat > CMakeLists.txt << EOL
+          cmake_minimum_required(VERSION 3.13)
+
+          project(SEALTest VERSION 4.0.0 LANGUAGES CXX)
+
+          # If not called from root CMakeLists.txt
+          if(NOT DEFINED SEAL_BUILD_EXAMPLES)
+              set(SEAL_BUILD_EXAMPLES ON)
+
+              # Import Microsoft SEAL
+              find_package(SEAL 4.0.0 EXACT REQUIRED)
+
+              set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+          endif()
+
+          if(SEAL_BUILD_EXAMPLES)
+              add_executable(sealtest)
+
+              target_sources(sealtest
+                  PRIVATE
+                      ${CMAKE_CURRENT_LIST_DIR}/4_bgv_basics.cpp
+              )
+
+              if(TARGET SEAL::seal)
+                  target_link_libraries(sealtest PRIVATE SEAL::seal)
+              elseif(TARGET SEAL::seal_shared)
+                  target_link_libraries(sealtest PRIVATE SEAL::seal_shared)
+              else()
+                  message(FATAL_ERROR "Cannot find target SEAL::seal or SEAL::seal_shared")
+              endif()
+          endif()
+          EOL
+
+          ##################################
+          #### Build and run example    ####
+          ##################################
+          cmake -S . -B build -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           pushd build
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} ..
           make -j
-          ./hello
+          bin/sealtest
+
+
+      # - name: Test SEAL
+      #   run: |
+      #     cat > CMakeLists.txt << EOL
+      #     cmake_minimum_required(VERSION 2.8.9)
+      #     project (hello)
+      #     ###################################################################
+      #     set(${PROJECT_NAME}_HEADER
+      #         "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.h")
+      #     set(${PROJECT_NAME}_SOURCES
+      #         "${CMAKE_CURRENT_SOURCE_DIR}/seal/native/examples/example.cpp")
+      #     ###################################################################
+      #     find_package(OpenMP)
+      #     if(OpenMP_CXX_FOUND)
+      #         target_link_libraries(hello PUBLIC OpenMP::OpenMP_CXX)
+      #     endif()
+      #     ###################################################################
+      #     ## SEAL
+      #     set(_COMPONENT_NAME "SEAL")
+      #     set(_COMPONENT_HEADER "seal/seal.h")
+      #     set(_COMPONENT_LIB_NAME "seal-3.6")
+      #     set(_HEADER_ONLY FALSE)
+      #     include(cmake/utils/import-library.cmake)
+      #     ###################################################################
+      #     target_sources(${PROJECT_NAME} PRIVATE ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
+      #     EOL  
+
+      #     mkdir build
+      #     pushd build
+      #     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} ..
+      #     make -j
+      #     ./hello
 
 
       # - name: Test OpenMP

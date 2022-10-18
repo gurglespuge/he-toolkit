@@ -18,13 +18,13 @@ class Config(NamedTuple, BaseModel):
 
     @validator('config_filename')
     def config_filename_is_string(cls, v):
-      if not isinstance(v, str):
-        raise ValueError('must be a string')
+      if len(v) == 0:
+        raise ValueError('must not be empty')
       return v
     @validator('repo_location')
     def repo_location_is_string(cls, v):
-      if not isinstance(v, str):
-        raise ValueError('must be a string')
+      if len(v) == 0:
+        raise ValueError('must not be empty')
       return v
 
 class ConfigFileError(Exception):

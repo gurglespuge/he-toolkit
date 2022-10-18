@@ -5,15 +5,27 @@
 
 from os import path
 from typing import NamedTuple
+
+from tomlkit import string
 from kit.utils.files import load_toml
+from pydantic import BaseModel, validator
 
-
-class Config(NamedTuple):
+class Config(NamedTuple, BaseModel):
     """Represents a config"""
 
     config_filename: str
     repo_location: str
 
+    @validator('config_filename')
+    def config_filename_is_string(cls, v):
+      if not isinstance(v, str):
+        raise ValueError('must be a string')
+      return v
+    @validator('repo_location')
+    def repo_location_is_string(cls, v):
+      if not isinstance(v, str):
+        raise ValueError('must be a string')
+      return v
 
 class ConfigFileError(Exception):
     """Error for when config file is not constructed correctly"""

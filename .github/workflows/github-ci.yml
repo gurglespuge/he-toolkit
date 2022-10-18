@@ -268,7 +268,7 @@ jobs:
           cmake -S . -B build -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           pushd build
           make -j
-          bin/sealtest
+          ./bin/sealtest
 
 
       # - name: Test SEAL

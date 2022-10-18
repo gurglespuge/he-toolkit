@@ -270,7 +270,7 @@ jobs:
           make -j
           pwd
           ls -la
-          sealtest
+          ./sealtest
 
 
       # - name: Test SEAL

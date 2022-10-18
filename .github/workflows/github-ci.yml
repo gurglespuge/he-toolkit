@@ -241,7 +241,7 @@ jobs:
               # Import Microsoft SEAL
               find_package(SEAL 4.0.0 EXACT REQUIRED)
 
-              set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+              # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
           endif()
 
           if(SEAL_BUILD_EXAMPLES)
@@ -268,7 +268,7 @@ jobs:
           cmake -S . -B build -DCMAKE_CXX_COMPILER=${{ matrix.cxx_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           pushd build
           make -j
-          ./bin/sealtest
+          sealtest
 
 
       # - name: Test SEAL

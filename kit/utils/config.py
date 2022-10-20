@@ -10,7 +10,7 @@ from tomlkit import string
 from kit.utils.files import load_toml
 from pydantic import BaseModel, validator
 
-class Config(NamedTuple, BaseModel):
+class Config(NamedTuple):
     """Represents a config"""
 
     config_filename: str

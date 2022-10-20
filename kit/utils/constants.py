@@ -6,7 +6,7 @@
 from dataclasses import dataclass
 from getpass import getuser
 from pathlib import Path
-
+from pydantic import BaseModel, validator
 
 @dataclass(frozen=True, init=False)
 class Constants:  # pylint: disable=too-many-instance-attributes
@@ -19,6 +19,12 @@ class Constants:  # pylint: disable=too-many-instance-attributes
     toolkit_label: str = f"{user}/ubuntu_he_toolkit:{version}"
     vscode_label: str = f"{user}/ubuntu_he_vscode:{version}"
 
+    @validator('user')
+    def config_filename_is_string(cls, v):
+      if len(v) == 0:
+        raise ValueError('must not be empty')
+      return v
+    
     # cmake properties
     cmake_min_version: str = "3.13"
     cmake_cxx_standard: str = "17"

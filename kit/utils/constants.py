@@ -20,7 +20,7 @@ class Constants:  # pylint: disable=too-many-instance-attributes
     vscode_label: str = f"{user}/ubuntu_he_vscode:{version}"
 
     @validator('user')
-    def config_filename_is_string(cls, v):
+    def user_is_not_empty(cls, v):
       if len(v) == 0:
         raise ValueError('must not be empty')
       return v

@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Tuple, Iterable
 from sys import exit as sys_exit
 from kit.utils.subparsers import validate_input
+from pydantic import validator
 
 
 class Op(Enum):
@@ -50,6 +51,18 @@ class Dep:
     def make_from_str(cls, dep_str: str) -> Dep:
         """Factory that transforms from string"""
         return cls(dep_str, Op.ANY, tuple(), "")
+    
+    @validator('name')
+    def name_is_not_empty(cls, v):
+      if len(v) == 0:
+        raise ValueError('must not be empty')
+      return v
+      
+    @validator('ver_str')
+    def ver_str_is_not_empty(cls, v):
+      if len(v) == 0:
+        raise ValueError('must not be empty')
+      return v
 
 
 def version_string_to_tuple(ver_str: str) -> Tuple[int, ...]:

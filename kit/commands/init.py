@@ -82,15 +82,16 @@ def append_to_rc(path: Path, content: str) -> None:
 def get_rc_file() -> Path:
     """Return the correct file to add shell commands"""
     active_shell_path = Path(environment["SHELL"]).name
-
     if active_shell_path == "bash":
         # if bash_profile file does not exist, try bashrc file
         rc_file = Path("~/.bash_profile").expanduser().resolve()
         if not file_exists(rc_file):
             rc_file = Path("~/.bashrc")
     # TODO add support for other popular shells
-    #    elif active_shell_path == "zsh":
-    #        rc_file = ""
+    elif active_shell_path == "zsh":
+        rc_file = Path("~/.zprofile").expanduser().resolve()
+        if not file_exists(rc_file):
+            rc_file = Path("~/.zshenv")
     else:
         raise ValueError(f"Unknown shell '{active_shell_path}'")
 
